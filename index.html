@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sobre el Dolor</title>
+<style>
+  /* =========================================================
+     RESET Y BASE
+  ========================================================= */
+  * { box-sizing: border-box; }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    overflow-x: hidden;
+    position: relative;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* =========================================================
+     PORTADA (triángulo con los 3 nombres)
+  ========================================================= */
+  :root {
+    --teal: #93c9c0;
+    --teal-light: #a9d6cd;
+    --teal-dark: #7fb0a6;
+    --lavender: #b9aed9;
+    --intro-text: #33475b;
+    --intro-card-bg: #ffffffd9;
+    --intro-bg-base: #f4f1ea;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --teal: #3f6b64;
+      --teal-light: #4d7d75;
+      --teal-dark: #325953;
+      --lavender: #5b4f7a;
+      --intro-text: #eef0f2;
+      --intro-card-bg: #1c1f24d9;
+      --intro-bg-base: #14161a;
+    }
+  }
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: var(--intro-text);
+    background: var(--intro-bg-base);
+  }
+
+  .bg-circles {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .circle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 3.2s ease-in-out, height 3.2s ease-in-out;
+  }
+  #circle1 { background: var(--teal-light); }
+  #circle2 { background: var(--teal-dark); }
+
+  #intro {
+    position: relative;
+    z-index: 1;
+    min-height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 0px);
+  }
+  .fade-out { animation: fadeOut 0.6s ease forwards; }
+  .fade-in-story { animation: fadeIn 0.8s ease forwards; }
+  @keyframes fadeOut { to { opacity: 0; transform: scale(0.97); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .intro-wrap {
+    text-align: center;
+    max-width: 460px;
+    width: 100%;
+  }
+  .intro-title {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .intro-sub {
+    font-size: 0.95rem;
+    opacity: 0.75;
+    margin-bottom: 36px;
+  }
+
+  .orbit-box {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 0 auto 40px;
+  }
+  .orbit {
+    position: absolute;
+    inset: 0;
+    animation: spin 18s linear infinite;
+  }
+  .name-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    animation: counterspin 18s linear infinite;
+  }
+  .name-wrap span {
+    display: inline-block;
+    background: var(--intro-card-bg);
+    color: var(--intro-text);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 0 6px 18px rgba(50, 60, 70, 0.18);
+    white-space: nowrap;
+  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes counterspin { from { transform: var(--base, none) rotate(0deg); } to { transform: var(--base, none) rotate(-360deg); } }
+  #n1 { --base: translate(-50%, -50%) translate(0px, -125px); }
+  #n2 { --base: translate(-50%, -50%) translate(-108px, 62px); }
+  #n3 { --base: translate(-50%, -50%) translate(108px, 62px); }
+
+  .center-heart {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 34px;
+  }
+
+  .btn {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--teal-light), var(--teal-dark));
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px 38px;
+    border-radius: 999px;
+    box-shadow: 0 8px 24px rgba(80, 90, 110, 0.25);
+    transition: transform 0.2s ease;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+
+  /* =========================================================
+     CARTA "SOBRE EL DOLOR" (scrollytelling)
+  ========================================================= */
+  #storyWrapper {
+    display: none;
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    color: #f3f0ea;
+  }
+
+  #bg-root {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+  .bg-layer {
+    position: absolute;
+    inset: -5%;
+    opacity: 0;
+    transition: opacity 2.4s ease;
+    will-change: opacity;
+  }
+  .bg-layer.active { opacity: 1; }
+  .bg-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%);
+    pointer-events: none;
+  }
+
+  .bg-1  { background: radial-gradient(circle at 50% 60%, #14161d 0%, #05060a 55%, #020203 100%); }
+  .bg-2  { background: linear-gradient(180deg, #06101f 0%, #0b1f3a 55%, #142c4d 100%); }
+  .bg-3  { background: linear-gradient(180deg, #1b1e24 0%, #2a2e36 60%, #14161b 100%); }
+  .bg-4  { background: linear-gradient(180deg, #23262d 0%, #34383f 50%, #101216 100%); }
+  .bg-5  { background: linear-gradient(180deg, #2c3a2e 0%, #6b7d4a 55%, #d9c98a 100%); }
+  .bg-6  { background: radial-gradient(circle at 50% 45%, #6b4a2e 0%, #3a2416 60%, #1c120a 100%); }
+  .bg-7  { background: linear-gradient(180deg, #1a1a1e 0%, #0c0c10 60%, #030304 100%); }
+  .bg-8  { background: radial-gradient(circle at 30% 40%, #ffdca6 0%, #c98a4a 35%, #3a2a20 70%, #14100d 100%); }
+  .bg-9  { background: linear-gradient(180deg, #23262f 0%, #14161d 60%, #07080b 100%); }
+  .bg-10 { background: radial-gradient(circle at 50% 70%, #ff8a3d 0%, #b8401f 40%, #3a1108 75%, #150703 100%); }
+  .bg-11 { background: linear-gradient(180deg, #16121c 0%, #3a2a4a 45%, #6a4f7a 75%, #caa66a 100%); }
+  .bg-12 { background: linear-gradient(180deg, #050810 0%, #0a1226 60%, #101a35 100%); }
+  .bg-13 { background: linear-gradient(180deg, #0a1020 0%, #3a3560 35%, #9a5a6a 65%, #f2a86a 100%); }
+  .bg-14 { background: linear-gradient(180deg, #7ea8c9 0%, #cfe0e8 45%, #f3ead9 100%); }
+
+  .stars {
+    position: absolute; inset: 0; width: 2px; height: 2px;
+    background: transparent;
+    animation: twinkle 4s ease-in-out infinite alternate;
+  }
+  @keyframes twinkle { from { opacity: 0.5; } to { opacity: 1; } }
+
+  .fog-blob {
+    position: absolute; width: 60vw; height: 60vw; border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%);
+    filter: blur(10px);
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+  .fog-blob.b2 { animation-duration: 28s; animation-direction: alternate-reverse; }
+  @keyframes drift {
+    from { transform: translate(-10%, -5%) scale(1); }
+    to   { transform: translate(15%, 10%) scale(1.15); }
+  }
+
+  .dust {
+    position: absolute; inset: 0; width: 3px; height: 3px;
+    background: transparent;
+    animation: floaty 10s ease-in-out infinite alternate;
+  }
+  @keyframes floaty { from { transform: translateY(0); } to { transform: translateY(-24px); } }
+
+  .embers {
+    position: absolute; inset: 0; width: 3px; height: 3px;
+    background: transparent;
+    animation: rise 6s ease-in-out infinite alternate;
+  }
+  @keyframes rise { from { transform: translateY(0); opacity: 0.6; } to { transform: translateY(-40px); opacity: 1; } }
+
+  .door {
+    position: absolute; top: 0; width: 52%; height: 100%;
+    background: linear-gradient(180deg, #0a0a0c, #000000);
+    transition: transform 2.6s cubic-bezier(.6,0,.3,1);
+  }
+  .door-l { left: 0; transform: translateX(-100%); border-right: 1px solid rgba(255,255,255,0.05); }
+  .door-r { right: 0; transform: translateX(100%); border-left: 1px solid rgba(255,255,255,0.05); }
+  .bg-layer.active .door-l,
+  .bg-layer.active .door-r { transform: translateX(0); }
+
+  .light-beam {
+    position: absolute; top: -10%; left: 20%; width: 45%; height: 130%;
+    background: linear-gradient(180deg, rgba(255,244,214,0.35), rgba(255,244,214,0) 70%);
+    transform: rotate(8deg);
+    filter: blur(6px);
+  }
+
+  .horizon-glow {
+    position: absolute; bottom: 28%; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, #ffd9a0, transparent);
+    box-shadow: 0 0 60px 12px rgba(255,217,160,0.5);
+  }
+
+  .road-wrap { position: absolute; inset: 0; display: flex; align-items: flex-end; justify-content: center; }
+  .road-wrap svg { width: 100%; height: 60%; opacity: 0.5; }
+
+  #content { position: relative; z-index: 2; }
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 90px 22px;
+  }
+  .text-box {
+    max-width: 620px;
+    width: 100%;
+    background: rgba(6, 6, 10, 0.34);
+    backdrop-filter: blur(7px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 36px 30px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 1s ease, transform 1s ease;
+  }
+  .stage.in-view .text-box { opacity: 1; transform: translateY(0); }
+  .text-box.in-view-always { opacity: 1; transform: translateY(0); }
+
+  .kicker {
+    font-family: 'Segoe UI', sans-serif;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    opacity: 0.55;
+    margin-bottom: 14px;
+  }
+  .heading {
+    font-size: clamp(1.3rem, 4vw, 1.9rem);
+    margin: 0 0 20px;
+    font-weight: 400;
+    line-height: 1.35;
+  }
+  .stage p {
+    font-size: clamp(1rem, 2.4vw, 1.14rem);
+    line-height: 1.85;
+    margin: 0 0 18px;
+    opacity: 0.96;
+  }
+  .stage p:last-child { margin-bottom: 0; }
+  .quote-block {
+    font-style: italic;
+    font-size: clamp(1.02rem, 2.6vw, 1.2rem);
+    line-height: 1.8;
+    margin: 0 0 10px;
+    opacity: 0.98;
+  }
+  .quote-ref {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    opacity: 0.6;
+    margin-bottom: 26px;
+    display: block;
+  }
+
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+  }
+  #hero h1 {
+    font-size: clamp(2.2rem, 7vw, 3.4rem);
+    font-weight: 400;
+    letter-spacing: 1px;
+    margin: 0;
+    opacity: 0;
+    animation: heroFade 1.8s ease forwards;
+  }
+  #hero .hero-line {
+    margin-top: 22px;
+    font-style: italic;
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    opacity: 0;
+    animation: heroFade 1.8s ease forwards;
+    animation-delay: 1.6s;
+  }
+  @keyframes heroFade { to { opacity: 1; } }
+  .scroll-cue {
+    margin-top: 60px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: heroFade 1.8s ease forwards, bob 2.4s ease-in-out infinite;
+    animation-delay: 2.6s, 2.6s;
+  }
+  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+
+  #closing {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+  }
+  #closing .signature { margin-top: 22px; font-size: 0.9rem; letter-spacing: 1px; opacity: 0.7; }
+
+  #progress {
+    position: fixed;
+    top: env(safe-area-inset-top, 0px);
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background: rgba(255,255,255,0.55);
+    z-index: 3;
+    transition: width 0.1s linear;
+  }
+
+  /* control de música */
+  #muteBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 5;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ MÚSICA DE FONDO ============
+       Reemplaza el src="" de abajo por el nombre de tu archivo,
+       por ejemplo: src="musica.mp3", puesto en la misma carpeta
+       que este HTML cuando lo publiques. -->
+  <audio id="bgMusic" loop preload="none" src="Song_of_Healing.mp3"></audio>
+
+  <!-- ============ PORTADA ============ -->
+  <div class="bg-circles" id="bgCircles">
+    <div class="circle" id="circle1"></div>
+    <div class="circle" id="circle2"></div>
+  </div>
+
+  <section id="intro">
+    <div class="intro-wrap">
+      <div class="intro-title">Con cariño para</div>
+      <div class="intro-sub">un pequeño detalle para ustedes</div>
+
+      <div class="orbit-box">
+        <div class="orbit">
+          <div class="name-wrap" id="n1"><span>Jonathan</span></div>
+          <div class="name-wrap" id="n2"><span>Yulisa</span></div>
+          <div class="name-wrap" id="n3"><span>Juliana</span></div>
+        </div>
+        <div class="center-heart">💚</div>
+      </div>
+
+      <button class="btn" id="continueBtn">Continuar →</button>
+    </div>
+  </section>
+
+  <!-- ============ CARTA "SOBRE EL DOLOR" ============ -->
+  <div id="storyWrapper">
+    <div id="progress"></div>
+    <button id="muteBtn" title="Silenciar / activar música">🔊</button>
+
+    <div id="bg-root">
+      <div class="bg-vignette"></div>
+    </div>
+
+    <div id="content">
+      <section id="hero">
+        <h1>Sobre el Dolor</h1>
+        <div class="hero-line">“Esa pequeña invitación fue un salvavidas.”</div>
+        <div class="scroll-cue">Desliza para continuar ↓</div>
+      </section>
+
+      <!-- las 14 etapas se insertan aquí por JS -->
+
+      <section id="closing">
+        <div class="text-box in-view-always">
+            <p style="font-style:italic; max-width:520px; margin:0 auto; line-height:1.8;">
+            Solo quiero tener la sabiduría para dar el siguiente paso.
+          </p>
+          <div class="signature">— Sobre el Dolor</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+/* =========================================================
+   1. DATOS DE LA CARTA
+   ========================================================= */
+const STAGES = [
+  { bg: 1, kicker: 'I', heading: 'El salvavidas',
+    paragraphs: [
+      'Esa pequeña invitación fue un salvavidas.',
+      'Estaba atravesando un momento oscuro, cuestionando muchas cosas y cuestionando también cómo las he hecho.'
+    ]},
+  { bg: 2, kicker: 'II', heading: 'El misterio',
+    quote: { text: '“Todo lo hizo hermoso en su tiempo; y ha puesto eternidad en el corazón de ellos, sin que alcance el hombre a entender la obra que ha hecho Dios desde el principio hasta el fin.”', ref: 'Eclesiastés 3:11' },
+    paragraphs: [
+      'Como dice esta hermosa cita bíblica, la manera en que Dios hace las cosas es un misterio, pero uno muy hermoso que con el tiempo podemos llegar a ver aunque con su inmensidad no creo que logremos entenderlo. Y ahora mismo puedo contemplar un poco de esto, y pues es una de las razones por las que ustedes me caen tan bien y por las que intento buscar conversación y demás, a pesar de que me sienta bastante torpe socializando, porque han sido como unos ángeles del cielo ayudándome a salir de una situación de angustia y dolor tremenda, armados solamente con la palabra de Dios.'
+    ]},
+  { bg: 3, kicker: 'III', heading: 'El dolor que abre los ojos',
+    paragraphs: [
+      'Hace unos meses, cuando terminé de leer un libro, La muerte de Iván Ilich, empecé a reflexionar mucho sobre esto. Es un libro que recomiendo mucho leer e interiorizar, abrazar lo que sus reflexiones dejan. Nuestro mundo está lleno ahora de mucha superficialidad, vacío y banalidad.',
+      'Como a Iván, muchas veces el dolor y la agonía, ya sea por algo externo o por nuestras propias acciones, nos llevan a abrir los ojos sobre las mentiras sobre las que vivimos o las apariencias que queremos dar a ver a los demás.'
+    ]},
+  { bg: 4, kicker: 'IV', heading: 'Un futuro que solo existe en mi imaginación',
+    paragraphs: [
+      'En parte, este dolor era a causa de mi preocupación por el futuro, por lo que voy a hacer el día de mañana, planeando y enojándome si lo que planeaba no salía como esperaba, viviendo en la mentira de un futuro que solo existe en mi imaginación. Un futuro que quizás Dios no ha designado para mí y que, como un humano con mi arrogancia, quería alcanzar a como diera lugar.',
+      'Entre mis divagaciones y el dejarme sumergir en las profundidades de mis recuerdos, pensamientos y oraciones, intentaba encontrar cómo escapar de mi propia arrogancia.',
+      'Siempre me he caracterizado por pelear contra lo que siento que me aprisiona, así sea yo mismo.',
+      'Siempre he sido alguien que pelea por alcanzar sus sueños. Quería alcanzar unas metas por las que estaba sacrificando cosas como mis amistades, mis habilidades sociales y mi relación con mi familia.'
+    ]},
+  { bg: 5, kicker: 'V', heading: 'Volver a mirar el mundo',
+    paragraphs: [
+      'Como no son cosas precisamente pequeñas, me detuve a pensar después de leer La muerte de Iván Ilich. Reflexionando, me di cuenta de que hacía tiempo, cuando era demasiado tímido durante mucho tiempo, superé esto con pequeñas acciones, fe, mucha paciencia, reflexiones y demás, y logré cumplir mi objetivo.',
+      'Me percaté de que era algo similar: un dolor y tristeza nacidos de unas ideas erróneas, de mentiras que yo mismo me creía, pensando en mundos de fantasía y mejores que el nuestro.',
+      'Pero estaba completamente ciego a las maravillas que Dios nos ha entregado.',
+      'En cada piedra, en cada suspiro, hay un mundo de mil, si no miles, de maravillas, millones de posibilidades que, si no salía de mi mundo de ideas, me iba a perder.',
+      'Además, tener vergüenza por lo que pensaran los demás era un absurdo. Al final, todos están demasiado sumergidos en sus propias expectativas y buscando sus objetivos como para estar pensando en si los decepcionaste. Hay personas a las que les importa más si fracasas o no, pero al final es mi vida y solo Dios sabe cual es el camino que deba seguir.',
+      'Y en un quiebre definitivo de mi yo de ese entonces decidí tomar las riendas de mi vida por mí mismo, con mis expectativas y con mis objetivos, sin estar al pendiente de lo que pensarían quizás los demás.',
+      'Debía confiar en que Dios me ha brindado la sabiduría para abordar mi vida de la mejor manera y, si no es así, poder por lo menos decir que no caí rendido en mi mundo interior, sino peleando por mejorar e intentar ver lo mejor de este mundo con todas sus maravillas.'
+    ]},
+  { bg: 6, kicker: 'VI', heading: 'El ancla',
+    paragraphs: [
+      'Pero justo poco después de eso caí en otro problema sin darme cuenta de este.',
+      'Cuando llegué aquí estaba triste y enojado porque me estaba alejando mucho de lo que quería intentar hacer y lograr. Intenté buscar el lado positivo y empezar a estudiar la ingeniería virtual, pero igual estaba inconforme.',
+      'Estudiaba todo el tiempo o, cuando no lo hacía, me quedaba divagando en mi dejadez. Como mencioné, me alejé de todo y de todos pensando en soluciones y posibilidades, en mi arrogancia, para encontrar otra solución.',
+      'Pero tenía a mi hermana.',
+      'Quería estar cerca de ella. No quería que quizás, cuando la viera de nuevo, ni me reconociera. Quería su afecto y cariño y yo quería darle el mío a ella.',
+      'Ella fue un ancla que Dios me dio para percatarme de que estaba haciendo las cosas mal otra vez, que tenía que ver el mundo real de nuevo, ver la verdad que ponía delante de mí en forma de esa sonrisita tan inocente.',
+      'Estaba queriendo completar mis objetivos, conseguir lo que quería, mientras me alejaba de las personas que importaban, que son las que me acompañarán independientemente lo que pase.',
+      'Al final, los que en verdad te quieren te apoyarán, dirán la verdad de lo que has hecho y te apoyarán para que continúes con la vida, con tantas cosas hermosas por contemplar.'
+    ]},
+  { bg: 7, kicker: 'VII', heading: 'El corazón cerrado',
+    paragraphs: [
+      'Por eso, en mi torpeza, intenté inmediatamente empezar a conversar más con mis amigos, con mi familia, pero es algo difícil.',
+      'Buscando aún más profundamente, vi que es algo difícil: las relaciones humanas en general para mí, porque me he sentido muy incomprendido. Pero tampoco expreso mis ideas demasiado con los demás, por lo que era ilógico y tonto. Un círculo que no se iba a acabar si no comunicaba mis ideas, si no las daba a entender.',
+      'Divagado aun mas profundo vi que a causa de tantas mudanzas, cambios y pérdidas de amigos que fueron rompiendo mi corazón poco a poco, pieza a pieza, hasta que ya no quería tampoco abrirlo a nadie.',
+      'Una cosa mucho más grande de lo que pensaba.',
+      'Empecé a hacer cosas diferentes para encontrar solución a este problema y cambiar mi realidad, como lo pude hacer en un pasado.'
+    ]},
+  { bg: 8, kicker: 'VIII', heading: 'Ustedes',
+    paragraphs: [
+      'Y aquí es cuando llegué con ustedes.',
+      'Llegué con ustedes con esa tormenta en mi mente, intentando encontrar cómo pasar y abrazar todo ese dolor que me forjó en el pasado.',
+      'Y esa pequeña invitación fue un salvavidas.'
+    ]},
+  { bg: 9, kicker: 'IX', heading: 'Otra despedida',
+    paragraphs: [
+      'Pero justo poco después me enteré de que pronto de nuevo nos iríamos, por lo que se abrió otra vez esa herida en mi corazón y, con más facilidad, al comprender el origen de tantas tristezas.'
+    ]},
+  { bg: 10, kicker: 'X', heading: 'Un corazón de acero',
+    quote: { text: '“Las lecciones que no traen con ellas algo de dolor no valen la pena, después de todo, nadie puede ganar nada sin sacrificar algo. Una vez superado ese dolor se gana un corazón lo suficientemente fuerte para no ser vencido, un corazón de acero.”', ref: 'Hiromu Arakawa' },
+    paragraphs: [
+      'Todo ese dolor me ha hecho aprender mucho.',
+      'Lo abracé con todas mis fuerzas y estoy aceptándolo, y estoy creciendo a una velocidad que no creía posible en mí, a punta de fe y unas cuantas cositas más.',
+      'Todo el dolor, una bendición al final de cuentas, me ha permitido ver la vida de otra forma.',
+      'Por eso le doy gracias a Dios, porque fue en el tiempo preciso y exacto en que necesitaba cruzarme con ustedes, después de tener tiempo para comprenderme hasta ese punto.',
+      'Y gracias a ustedes por dejar a Dios actuar en ustedes para que este mensaje llegara a mí.'
+    ]},
+  { bg: 11, kicker: 'XI', heading: 'Las palabras que quedaron',
+    intro: 'Algunas de las citas que usaron y que, al recordarlas en esa tempestad, me ayudaron mucho:',
+    quotes: [
+      { text: '“Porque donde están dos o tres congregados en mi nombre, allí estoy yo en medio de ellos.”', ref: 'Mateo 18:20' },
+      { text: '“de quien todo el cuerpo, bien concertado y unido entre sí por todas las coyunturas que se ayudan mutuamente, según la actividad propia de cada miembro, recibe su crecimiento para ir edificándose en amor.”', ref: 'Efesios 4:16' },
+      { text: '“Por tanto, id, y haced discípulos a todas las naciones, bautizándolos en el nombre del Padre, y del Hijo, y del Espíritu Santo; enseñándoles que guarden todas las cosas que os he mandado; y he aquí yo estoy con vosotros todos los días, hasta el fin del mundo. Amén.”', ref: 'Mateo 28:19-20' },
+      { text: '“Cuando vio Jesús a su madre, y al discípulo a quien él amaba, que estaba presente, dijo a su madre: Mujer, he ahí tu hijo. Después dijo al discípulo: He ahí tu madre. Y desde aquella hora el discípulo la recibió en su casa.”', ref: 'Juan 19:26' }
+    ],
+    paragraphs: [
+      'Como ven, todas engloban la fe en que, a pesar de que quizás me tenga que ir pronto, siempre debo recordar que nunca estaré solo.'
+    ]},
+  { bg: 12, kicker: 'XII', heading: 'Nunca estaré solo',
+    paragraphs: [
+      'A pesar de dónde vaya, estará Dios y la Virgen conmigo, que estuvieron conmigo todos los días de dolor y siempre lo estarán.',
+      'Pero ahora mi deber es ayudarlos a ustedes, si está en mis capacidades, o a los demás. Quiero que puedan sentir esta esperanza y alegría, hasta en esas cosas que consideramos en muchas ocasiones malas.'
+    ],
+    quote: { text: '“Todo lo hizo hermoso en su tiempo; y ha puesto eternidad en el corazón de ellos, sin que alcance el hombre a entender la obra que ha hecho Dios desde el principio hasta el fin.”', ref: 'Eclesiastés 3:11' }},
+  { bg: 13, kicker: 'XIII', heading: 'El ángel',
+    paragraphs: [
+      'Quizás ahora que me marche sea mi turno de ser el ángel de alguien más.',
+      'No lo sé.',
+      'No sé qué sea lo que Dios quiera de mí en unos meses. Solo le pediré el discernimiento para encontrar el camino que tenga para mí.',
+      'Quizás nunca llegue a entender completamente la obra que Dios está haciendo desde el principio hasta el fin.',
+      'Pero ahora puedo mirar un poco hacia atrás y entender que algunas cosas que en su momento solamente parecían dolor, tristeza, pérdida o fracaso, terminaron llevándome hacia lugares y personas que necesitaba encontrar.',
+      'Y ustedes fueron parte de eso.',
+      'Por eso, gracias.',
+      'Gracias por esa pequeña invitación.',
+      'Gracias por las conversaciones, por las palabras y por haber dejado que Dios actuara a través de ustedes.'
+    ]},
+  { bg: 14, kicker: 'XIV', heading: 'El siguiente paso',
+    paragraphs: [
+      'Doy gracias a Dios por la capacidad de escribir algo como esto para poder expresarme.',
+      'No sé qué vaya a pasar después, ni cuánto tiempo tengamos todavía para compartir, pero sí sé que, de alguna manera, ese pequeño momento quedó conmigo.',
+      'Y si algún día puedo hacer por alguien, aunque sea una pequeña parte de lo que ustedes hicieron por mí, espero tener la suficiente fe y el suficiente discernimiento para hacerlo.',
+      'Porque quizás ese sea también el propósito de todo este dolor.',
+      'Quizás Dios no me permitió entenderlo todo.',
+      'Quizás solamente necesitaba vivirlo, aprender de él, abrazarlo y seguir caminando.',
+      'Y ahora, por primera vez en mucho tiempo, no siento que necesite conocer todo el camino.'
+    ]}
+];
+
+/* =========================================================
+   2. UTILIDADES VISUALES
+   ========================================================= */
+function randomDots(count, colorFn) {
+  const parts = [];
+  for (let i = 0; i < count; i++) {
+    const x = (Math.random() * 100).toFixed(2);
+    const y = (Math.random() * 100).toFixed(2);
+    parts.push(`${x}vw ${y}vh 0 ${colorFn()}`);
+  }
+  return parts.join(', ');
+}
+
+function buildExtras(bgNum, layer) {
+  if (bgNum === 2 || bgNum === 12) {
+    const stars = document.createElement('div');
+    stars.className = 'stars';
+    stars.style.boxShadow = randomDots(90, () => '#ffffff');
+    layer.appendChild(stars);
+  }
+  if (bgNum === 3 || bgNum === 4) {
+    const f1 = document.createElement('div'); f1.className = 'fog-blob';
+    f1.style.top = '10%'; f1.style.left = '-10%';
+    const f2 = document.createElement('div'); f2.className = 'fog-blob b2';
+    f2.style.bottom = '5%'; f2.style.right = '-15%';
+    layer.appendChild(f1); layer.appendChild(f2);
+  }
+  if (bgNum === 5) {
+    const dust = document.createElement('div');
+    dust.className = 'dust';
+    dust.style.boxShadow = randomDots(50, () => 'rgba(255,250,220,0.9)');
+    layer.appendChild(dust);
+  }
+  if (bgNum === 7) {
+    const dl = document.createElement('div'); dl.className = 'door door-l';
+    const dr = document.createElement('div'); dr.className = 'door door-r';
+    layer.appendChild(dl); layer.appendChild(dr);
+  }
+  if (bgNum === 8 || bgNum === 11) {
+    const beam = document.createElement('div');
+    beam.className = 'light-beam';
+    layer.appendChild(beam);
+  }
+  if (bgNum === 10) {
+    const embers = document.createElement('div');
+    embers.className = 'embers';
+    embers.style.boxShadow = randomDots(40, () => `rgba(255,${120 + Math.floor(Math.random()*80)},60,0.9)`);
+    layer.appendChild(embers);
+  }
+  if (bgNum === 13) {
+    const glow = document.createElement('div');
+    glow.className = 'horizon-glow';
+    layer.appendChild(glow);
+  }
+  if (bgNum === 14) {
+    const wrap = document.createElement('div');
+    wrap.className = 'road-wrap';
+    wrap.innerHTML = `
+      <svg viewBox="0 0 400 260" preserveAspectRatio="none">
+        <line x1="200" y1="260" x2="120" y2="0" stroke="#5a4a3a" stroke-width="6"/>
+        <line x1="200" y1="260" x2="280" y2="0" stroke="#5a4a3a" stroke-width="6"/>
+        <line x1="200" y1="260" x2="200" y2="0" stroke="#8a7a5a" stroke-width="2" stroke-dasharray="10 14"/>
+      </svg>`;
+    layer.appendChild(wrap);
+  }
+}
+
+/* =========================================================
+   3. RENDER DE LA CARTA
+   ========================================================= */
+const bgRoot = document.getElementById('bg-root');
+const contentRoot = document.getElementById('content');
+const closingSection = document.getElementById('closing');
+
+STAGES.forEach((stage, idx) => {
+  const layer = document.createElement('div');
+  layer.className = `bg-layer bg-${stage.bg}`;
+  layer.dataset.index = idx;
+  buildExtras(stage.bg, layer);
+  bgRoot.appendChild(layer);
+
+  const section = document.createElement('section');
+  section.className = 'stage';
+  section.dataset.index = idx;
+
+  let html = `<div class="text-box">`;
+  html += `<div class="kicker">${stage.kicker}</div>`;
+  html += `<div class="heading">${stage.heading}</div>`;
+  if (stage.intro) html += `<p>${stage.intro}</p>`;
+  if (stage.quote) html += `<div class="quote-block">${stage.quote.text}</div><span class="quote-ref">${stage.quote.ref}</span>`;
+  if (stage.quotes) {
+    stage.quotes.forEach(q => { html += `<div class="quote-block">${q.text}</div><span class="quote-ref">${q.ref}</span>`; });
+  }
+  (stage.paragraphs || []).forEach(p => { html += `<p>${p}</p>`; });
+  html += `</div>`;
+  section.innerHTML = html;
+
+  contentRoot.insertBefore(section, closingSection);
+});
+
+/* =========================================================
+   4. OBSERVADORES DE SCROLL
+   ========================================================= */
+const bgLayers = Array.from(document.querySelectorAll('.bg-layer'));
+const stageSections = Array.from(document.querySelectorAll('.stage'));
+
+function activateBg(idx) {
+  bgLayers.forEach(l => l.classList.toggle('active', Number(l.dataset.index) === idx));
+}
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('in-view');
+      activateBg(Number(entry.target.dataset.index));
+    }
+  });
+}, { threshold: 0.5 });
+
+stageSections.forEach(s => io.observe(s));
+if (bgLayers[0]) bgLayers[0].classList.add('active');
+
+const progressEl = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = max > 0 ? (scrollTop / max) * 100 : 0;
+  progressEl.style.width = pct + '%';
+});
+
+/* =========================================================
+   5. PORTADA — círculos de fondo
+   ========================================================= */
+const c1 = document.getElementById('circle1');
+const c2 = document.getElementById('circle2');
+let active = c1, inactive = c2, topZ = 1;
+
+function randomPos() {
+  return { left: Math.random() * 100 + '%', top: Math.random() * 100 + '%' };
+}
+function growCircle(el, zIndex) {
+  const pos = randomPos();
+  el.style.transition = 'none';
+  el.style.left = pos.left;
+  el.style.top = pos.top;
+  el.style.width = '0px';
+  el.style.height = '0px';
+  el.style.zIndex = zIndex;
+  void el.offsetWidth;
+  el.style.transition = 'width 3.2s ease-in-out, height 3.2s ease-in-out';
+  el.style.width = '300vmax';
+  el.style.height = '300vmax';
+}
+function cycle() {
+  topZ++;
+  growCircle(active, topZ);
+  setTimeout(() => { [active, inactive] = [inactive, active]; cycle(); }, 3600);
+}
+inactive.style.left = '50%';
+inactive.style.top = '50%';
+inactive.style.width = '300vmax';
+inactive.style.height = '300vmax';
+inactive.style.zIndex = 0;
+cycle();
+
+/* =========================================================
+   6. NAVEGACIÓN PORTADA -> CARTA + MÚSICA
+   ========================================================= */
+const bgMusic = document.getElementById('bgMusic');
+const muteBtn = document.getElementById('muteBtn');
+
+document.getElementById('continueBtn').addEventListener('click', () => {
+  const intro = document.getElementById('intro');
+  const circlesBg = document.getElementById('bgCircles');
+  const story = document.getElementById('storyWrapper');
+
+  intro.classList.add('fade-out');
+  setTimeout(() => {
+    intro.style.display = 'none';
+    circlesBg.style.display = 'none';
+    story.style.display = 'block';
+    story.classList.add('fade-in-story');
+
+    // Esto cuenta como interacción del usuario, así que el navegador
+    // permite reproducir audio con sonido (no solo silenciado).
+    if (bgMusic.getAttribute('src')) {
+      bgMusic.volume = 0.5;
+      bgMusic.play().catch(() => {});
+    }
+  }, 550);
+});
+
+muteBtn.addEventListener('click', () => {
+  bgMusic.muted = !bgMusic.muted;
+  muteBtn.textContent = bgMusic.muted ? '🔇' : '🔊';
+});
+</script>
+</body>
+</html>
